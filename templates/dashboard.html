@@ -1,0 +1,1177 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>แดชบอร์ดงานดิน</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <!-- Font Awesome -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #17a2b8;
+      }
+
+      body {
+        background-color: #f4f6f9;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .navbar {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .dashboard-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        transition:
+          transform 0.3s ease,
+          box-shadow 0.3s ease;
+        overflow: hidden;
+      }
+
+      .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+      }
+
+      .stat-card {
+        padding: 25px;
+        position: relative;
+      }
+
+      .stat-card .icon {
+        position: absolute;
+        right: 20px;
+        top: 20px;
+        font-size: 3rem;
+        opacity: 0.15;
+      }
+
+      .stat-card .value {
+        font-size: 2.2rem;
+        font-weight: 700;
+        margin-bottom: 5px;
+      }
+
+      .stat-card .label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .stat-card.total {
+        border-left: 5px solid var(--secondary-color);
+      }
+
+      .stat-card.completed {
+        border-left: 5px solid var(--success-color);
+      }
+
+      .stat-card.remaining {
+        border-left: 5px solid var(--warning-color);
+      }
+
+      .progress-section {
+        padding: 20px;
+      }
+
+      .progress-bar-custom {
+        height: 25px;
+        border-radius: 12px;
+        overflow: hidden;
+        background-color: #e9ecef;
+      }
+
+      .progress-bar-fill {
+        height: 100%;
+        border-radius: 12px;
+        transition: width 0.6s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+      }
+
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .table-custom {
+        margin-bottom: 0;
+      }
+
+      /* ทำให้ตาราง Daily Progress เลื่อนได้เฉพาะส่วน (รองรับข้อมูลหลายเดือน) */
+      .daily-progress-scroll {
+        max-height: 420px;
+        overflow-y: auto;
+      }
+
+      .table-custom th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 500;
+        border: none;
+      }
+
+      .table-custom td {
+        vertical-align: middle;
+      }
+
+      .status-badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: 500;
+      }
+
+      .status-completed {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .status-in-progress {
+        background-color: #fff3cd;
+        color: #856404;
+      }
+
+      .status-not-started {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .result-pass {
+        background-color: #d4edda;
+        color: #155724;
+      }
+
+      .result-fail {
+        background-color: #f8d7da;
+        color: #721c24;
+      }
+
+      .result-pending {
+        background-color: #e2e3e5;
+        color: #383d41;
+      }
+
+      .qaqc-summary-card {
+        text-align: center;
+        padding: 20px;
+      }
+
+      .qaqc-number {
+        font-size: 2rem;
+        font-weight: 700;
+      }
+
+      .refresh-btn {
+        background: linear-gradient(135deg, var(--secondary-color), #2980b9);
+        border: none;
+        padding: 10px 25px;
+        border-radius: 25px;
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .refresh-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        color: white;
+      }
+
+      .last-update {
+        font-size: 0.85rem;
+        color: #6c757d;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+      }
+
+      @media (max-width: 768px) {
+        .stat-card .value {
+          font-size: 1.8rem;
+        }
+        .stat-card .icon {
+          font-size: 2rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark py-3">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+          <i class="fas fa-hard-hat me-2"></i>
+          <span data-i18n="brand">แดชบอร์ดงานดิน</span>
+        </a>
+        <div class="d-flex align-items-center">
+          <span class="last-update text-white me-3" id="lastUpdate">
+            <i class="fas fa-clock me-1"></i>
+            <span data-i18n="last_update">อัปเดตล่าสุด</span>:
+            <span id="lastUpdateTime">--</span>
+          </span>
+          <button
+            class="btn btn-outline-light btn-sm me-2"
+            id="langToggle"
+            type="button"
+            aria-label="Toggle language"
+          >
+            EN
+          </button>
+          <button class="refresh-btn" onclick="refreshData()">
+            <i class="fas fa-sync-alt me-2"></i
+            ><span data-i18n="refresh">รีเฟรช</span>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid py-4">
+      <!-- Volume Summary Cards -->
+      <div class="row g-4 mb-4">
+        <!-- Total Volume -->
+        <div class="col-lg-4 col-md-6">
+          <div class="dashboard-card stat-card total">
+            <i class="fas fa-cube icon text-primary"></i>
+            <div class="value text-primary" id="totalVolume">--</div>
+            <div class="label" data-i18n="total_volume">ปริมาตรรวม</div>
+            <div class="text-muted mt-2">
+              <span id="totalUnit">m³</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Completed Volume -->
+        <div class="col-lg-4 col-md-6">
+          <div class="dashboard-card stat-card completed">
+            <i class="fas fa-check-circle icon text-success"></i>
+            <div class="value text-success" id="completedVolume">--</div>
+            <div class="label" data-i18n="completed_volume">
+              ปริมาตรที่ทำแล้ว
+            </div>
+            <div class="text-muted mt-2">
+              <span id="completionPercent">--%</span>
+              <span data-i18n="complete_suffix">เสร็จแล้ว</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Remaining Volume -->
+        <div class="col-lg-4 col-md-6">
+          <div class="dashboard-card stat-card remaining">
+            <i class="fas fa-hourglass-half icon text-warning"></i>
+            <div class="value text-warning" id="remainingVolume">--</div>
+            <div class="label" data-i18n="remaining_volume">ปริมาตรคงเหลือ</div>
+            <div class="text-muted mt-2">
+              <span id="remainingPercent">--%</span>
+              <span data-i18n="remaining_suffix">คงเหลือ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- STA Progress & Layer Progress -->
+      <div class="row g-4 mb-4">
+        <!-- STA Progress -->
+        <div class="col-lg-6">
+          <div class="dashboard-card progress-section">
+            <h5 class="section-title">
+              <i class="fas fa-road me-2"></i
+              ><span data-i18n="sta_progress">ความก้าวหน้า STA</span>
+            </h5>
+            <div class="table-responsive">
+              <table class="table table-custom table-hover">
+                <thead>
+                  <tr>
+                    <th data-i18n="station">สถานี</th>
+                    <th data-i18n="progress">ความก้าวหน้า</th>
+                    <th data-i18n="status">สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody id="staProgressTable">
+                  <tr>
+                    <td colspan="3" class="text-center" data-i18n="loading">
+                      กำลังโหลด...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Layer Progress -->
+        <div class="col-lg-6">
+          <div class="dashboard-card progress-section">
+            <h5 class="section-title">
+              <i class="fas fa-layer-group me-2"></i
+              ><span data-i18n="layer_progress">ความก้าวหน้าแต่ละชั้นงาน</span>
+            </h5>
+            <div class="table-responsive">
+              <table class="table table-custom table-hover">
+                <thead>
+                  <tr>
+                    <th data-i18n="station">สถานี</th>
+                    <th data-i18n="layer">ชั้นงาน</th>
+                    <th data-i18n="progress">ความก้าวหน้า</th>
+                    <th data-i18n="status">สถานะ</th>
+                  </tr>
+                </thead>
+                <tbody id="layerProgressTable">
+                  <tr>
+                    <td colspan="4" class="text-center" data-i18n="loading">
+                      กำลังโหลด...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QAQC Tests -->
+      <div class="row g-4 mb-4">
+        <div class="col-12">
+          <div class="dashboard-card progress-section">
+            <h5 class="section-title">
+              <i class="fas fa-clipboard-check me-2"></i
+              ><span data-i18n="qaqc_tests">การทดสอบ QAQC</span>
+            </h5>
+
+            <!-- QAQC Summary Cards -->
+            <div class="row g-3 mb-4">
+              <div class="col-md-3 col-6">
+                <div class="qaqc-summary-card bg-light rounded">
+                  <div class="qaqc-number text-primary" id="totalTests">--</div>
+                  <div class="text-muted" data-i18n="total_tests">
+                    จำนวนทดสอบทั้งหมด
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-3 col-6">
+                <div class="qaqc-summary-card bg-light rounded">
+                  <div class="qaqc-number text-success" id="passedTests">
+                    --
+                  </div>
+                  <div class="text-muted" data-i18n="passed">ผ่าน</div>
+                </div>
+              </div>
+              <div class="col-md-3 col-6">
+                <div class="qaqc-summary-card bg-light rounded">
+                  <div class="qaqc-number text-danger" id="failedTests">--</div>
+                  <div class="text-muted" data-i18n="failed">ไม่ผ่าน</div>
+                </div>
+              </div>
+              <div class="col-md-3 col-6">
+                <div class="qaqc-summary-card bg-light rounded">
+                  <div class="qaqc-number text-info" id="passRate">--%</div>
+                  <div class="text-muted" data-i18n="pass_rate">อัตราผ่าน</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- QAQC Tests Table -->
+            <div class="table-responsive">
+              <table class="table table-custom table-hover">
+                <thead>
+                  <tr>
+                    <th data-i18n="station">สถานี</th>
+                    <th data-i18n="layer">ชั้นงาน</th>
+                    <th data-i18n="test_date">วันที่ทดสอบ</th>
+                    <th data-i18n="test_type">ประเภททดสอบ</th>
+                    <th data-i18n="location">ตำแหน่ง</th>
+                    <th data-i18n="compaction">ความแน่น %</th>
+                    <th data-i18n="result">ผล</th>
+                  </tr>
+                </thead>
+                <tbody id="qaqcTestsTable">
+                  <tr>
+                    <td colspan="7" class="text-center" data-i18n="loading">
+                      กำลังโหลด...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Daily Progress -->
+      <div class="row g-4 mb-4">
+        <div class="col-12">
+          <div class="dashboard-card progress-section">
+            <h5
+              class="section-title d-flex align-items-center justify-content-between"
+            >
+              <span
+                ><i class="fas fa-calendar-day me-2"></i
+                ><span data-i18n="daily_progress"
+                  >ความก้าวหน้ารายวัน</span
+                ></span
+              >
+              <div class="btn-group btn-group-sm" role="group">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  id="dailyScrollUp"
+                >
+                  <i class="fas fa-arrow-up"></i>
+                  <span class="ms-1" data-i18n="daily_scroll_up">
+                    เลื่อนขึ้น
+                  </span>
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  id="dailyScrollDown"
+                >
+                  <i class="fas fa-arrow-down"></i>
+                  <span class="ms-1" data-i18n="daily_scroll_down">
+                    เลื่อนลง
+                  </span>
+                </button>
+              </div>
+            </h5>
+
+            <div class="chart-container" style="height: 260px">
+              <canvas id="dailyChart"></canvas>
+            </div>
+
+            <div
+              class="table-responsive mt-3 daily-progress-scroll"
+              id="dailyProgressScroll"
+            >
+              <table class="table table-custom table-hover">
+                <thead>
+                  <tr>
+                    <th data-i18n="date">วันที่</th>
+                    <th data-i18n="daily_volume">ปริมาตร/วัน</th>
+                    <th data-i18n="cumulative_volume">สะสม</th>
+                    <th data-i18n="weather">สภาพอากาศ</th>
+                    <th data-i18n="manpower">แรงงาน</th>
+                    <th data-i18n="equipment">เครื่องจักร</th>
+                    <th data-i18n="remarks">หมายเหตุ</th>
+                  </tr>
+                </thead>
+                <tbody id="dailyProgressTable">
+                  <tr>
+                    <td colspan="7" class="text-center" data-i18n="loading">
+                      กำลังโหลด...
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="row g-4">
+        <div class="col-lg-8">
+          <div class="dashboard-card progress-section">
+            <h5 class="section-title">
+              <i class="fas fa-chart-bar me-2"></i
+              ><span data-i18n="volume_by_station">ปริมาตรแยกตามสถานี</span>
+            </h5>
+            <div class="chart-container">
+              <canvas id="volumeChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="dashboard-card progress-section">
+            <h5 class="section-title">
+              <i class="fas fa-chart-pie me-2"></i
+              ><span data-i18n="completion_overview">ภาพรวมความก้าวหน้า</span>
+            </h5>
+            <div class="chart-container">
+              <canvas id="completionChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      let volumeChart = null;
+      let completionChart = null;
+      let dailyChart = null;
+
+      // =========================
+      // ระบบภาษา (i18n) ฝั่ง Client
+      // =========================
+      // แนวคิด: ใช้ key เดียวกัน แล้วเลือกข้อความจาก I18N[currentLang][key]
+      // ข้อความที่อยู่บน HTML จะผูกด้วย attribute: data-i18n="..."
+      const I18N = {
+        th: {
+          title: "แดชบอร์ดงานดิน",
+          brand: "แดชบอร์ดงานดิน",
+          last_update: "อัปเดตล่าสุด",
+          refresh: "รีเฟรช",
+
+          total_volume: "ปริมาตรรวม",
+          completed_volume: "ปริมาตรที่ทำแล้ว",
+          remaining_volume: "ปริมาตรคงเหลือ",
+          complete_suffix: "เสร็จแล้ว",
+          remaining_suffix: "คงเหลือ",
+
+          sta_progress: "ความก้าวหน้า STA",
+          layer_progress: "ความก้าวหน้าแต่ละชั้นงาน",
+          qaqc_tests: "การทดสอบ QAQC",
+          daily_progress: "ความก้าวหน้ารายวัน",
+
+          daily_scroll_up: "เลื่อนขึ้น",
+          daily_scroll_down: "เลื่อนลง",
+
+          station: "สถานี",
+          layer: "ชั้นงาน",
+          progress: "ความก้าวหน้า",
+          status: "สถานะ",
+          loading: "กำลังโหลด...",
+
+          date: "วันที่",
+          daily_volume: "ปริมาตร/วัน",
+          cumulative_volume: "สะสม",
+          weather: "สภาพอากาศ",
+          manpower: "แรงงาน",
+          equipment: "เครื่องจักร",
+          remarks: "หมายเหตุ",
+
+          total_tests: "จำนวนทดสอบทั้งหมด",
+          passed: "ผ่าน",
+          failed: "ไม่ผ่าน",
+          pass_rate: "อัตราผ่าน",
+
+          test_date: "วันที่ทดสอบ",
+          test_type: "ประเภททดสอบ",
+          location: "ตำแหน่ง",
+          compaction: "ความแน่น %",
+          result: "ผล",
+
+          volume_by_station: "ปริมาตรแยกตามสถานี",
+          completion_overview: "ภาพรวมความก้าวหน้า",
+
+          design_volume_dataset: "ปริมาตรออกแบบ",
+          completed_volume_dataset: "ปริมาตรที่ทำแล้ว",
+          completed_label: "ทำแล้ว",
+          remaining_label: "คงเหลือ",
+
+          daily_volume_dataset: "ปริมาตรต่อวัน",
+          cumulative_volume_dataset: "ปริมาตรสะสม",
+
+          status_completed: "เสร็จแล้ว",
+          status_in_progress: "กำลังทำ",
+          status_not_started: "ยังไม่เริ่ม",
+
+          result_pass: "ผ่าน",
+          result_fail: "ไม่ผ่าน",
+          result_pending: "รอตรวจ",
+
+          layer_prefix: "ชั้นที่",
+        },
+        en: {
+          title: "Earthwork Dashboard",
+          brand: "Earthwork Dashboard",
+          last_update: "Last Update",
+          refresh: "Refresh",
+
+          total_volume: "Total Volume",
+          completed_volume: "Completed Volume",
+          remaining_volume: "Remaining Volume",
+          complete_suffix: "Complete",
+          remaining_suffix: "Remaining",
+
+          sta_progress: "STA Progress",
+          layer_progress: "Layer Progress",
+          qaqc_tests: "QAQC Tests",
+          daily_progress: "Daily Progress",
+
+          daily_scroll_up: "Scroll Up",
+          daily_scroll_down: "Scroll Down",
+
+          station: "Station",
+          layer: "Layer",
+          progress: "Progress",
+          status: "Status",
+          loading: "Loading...",
+
+          date: "Date",
+          daily_volume: "Daily Volume",
+          cumulative_volume: "Cumulative",
+          weather: "Weather",
+          manpower: "Manpower",
+          equipment: "Equipment",
+          remarks: "Remarks",
+
+          total_tests: "Total Tests",
+          passed: "Passed",
+          failed: "Failed",
+          pass_rate: "Pass Rate",
+
+          test_date: "Test Date",
+          test_type: "Test Type",
+          location: "Location",
+          compaction: "Compaction %",
+          result: "Result",
+
+          volume_by_station: "Volume by Station",
+          completion_overview: "Completion Overview",
+
+          design_volume_dataset: "Design Volume",
+          completed_volume_dataset: "Completed Volume",
+          completed_label: "Completed",
+          remaining_label: "Remaining",
+
+          daily_volume_dataset: "Daily Volume",
+          cumulative_volume_dataset: "Cumulative Volume",
+
+          status_completed: "Completed",
+          status_in_progress: "In Progress",
+          status_not_started: "Not Started",
+
+          result_pass: "Pass",
+          result_fail: "Fail",
+          result_pending: "Pending",
+
+          layer_prefix: "Layer",
+        },
+      };
+
+      // ภาษาปัจจุบันของหน้าเว็บ: "th" หรือ "en"
+      let currentLang = "th";
+
+      // แปล key -> string ตามภาษาปัจจุบัน (ถ้าไม่พบ key จะคืน key เดิมเพื่อ debug ง่าย)
+      function t(key) {
+        return (I18N[currentLang] && I18N[currentLang][key]) || key;
+      }
+
+      // locale สำหรับการฟอร์แมตวันเวลา/ตัวเลข (toLocaleString)
+      function getLocale() {
+        return currentLang === "th" ? "th-TH" : "en-US";
+      }
+
+      // แทนที่ข้อความบนหน้าจอทั้งหมดที่มี data-i18n ตามภาษาที่เลือก
+      function applyTranslations() {
+        document.title = t("title");
+        document.documentElement.lang = currentLang;
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          el.textContent = t(key);
+        });
+      }
+
+      // ตั้งค่าภาษา และ (เลือกได้) บันทึกลง localStorage เพื่อจำค่าไว้ครั้งถัดไป
+      function setLanguage(lang, persist = true) {
+        currentLang = lang === "en" ? "en" : "th";
+        if (persist)
+          localStorage.setItem("earthwork_dashboard_lang", currentLang);
+
+        const toggleBtn = document.getElementById("langToggle");
+        if (toggleBtn)
+          toggleBtn.textContent = currentLang === "th" ? "EN" : "ไทย";
+
+        applyTranslations();
+        renderLastUpdate();
+      }
+
+      // เก็บค่าเวลาจากฝั่งเซิร์ฟเวอร์ (ตอนกด Refresh) เพื่อแสดงเป็น "อัปเดตล่าสุด"
+      let lastUpdateValue = null;
+      function renderLastUpdate() {
+        const el = document.getElementById("lastUpdateTime");
+        if (!el) return;
+
+        if (lastUpdateValue) {
+          el.textContent = lastUpdateValue;
+        } else {
+          el.textContent = new Date().toLocaleString(getLocale());
+        }
+      }
+
+      // ฟอร์แมตตัวเลขตามภาษา (เช่น หลักพัน/ตัวคั่น)
+      function formatNumber(num) {
+        return num.toLocaleString(getLocale(), {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        });
+      }
+
+      // สร้าง HTML badge สำหรับ "สถานะ" ของงาน
+      function getStatusBadge(status) {
+        const statusMap = {
+          completed: `<span class="status-badge status-completed">${t("status_completed")}</span>`,
+          in_progress: `<span class="status-badge status-in-progress">${t("status_in_progress")}</span>`,
+          not_started: `<span class="status-badge status-not-started">${t("status_not_started")}</span>`,
+        };
+        return statusMap[status] || statusMap["not_started"];
+      }
+
+      // สร้าง HTML badge สำหรับ "ผลทดสอบ" QAQC
+      function getResultBadge(result) {
+        const resultMap = {
+          pass: `<span class="status-badge result-pass">${t("result_pass")}</span>`,
+          fail: `<span class="status-badge result-fail">${t("result_fail")}</span>`,
+          pending: `<span class="status-badge result-pending">${t("result_pending")}</span>`,
+        };
+        return resultMap[result] || resultMap["pending"];
+      }
+
+      // เลือกสี progress bar ตามเปอร์เซ็นต์ความก้าวหน้า
+      function getProgressColor(percent) {
+        if (percent >= 100) return "#27ae60";
+        if (percent >= 75) return "#2ecc71";
+        if (percent >= 50) return "#f39c12";
+        if (percent >= 25) return "#e67e22";
+        return "#e74c3c";
+      }
+
+      // โหลดข้อมูลสรุป (Total/Completed/Remaining) สำหรับการ์ด KPI
+      async function loadSummary() {
+        try {
+          const response = await fetch("/api/summary");
+          const result = await response.json();
+
+          if (result.success) {
+            const data = result.data;
+            document.getElementById("totalVolume").textContent = formatNumber(
+              data.total_volume,
+            );
+            document.getElementById("completedVolume").textContent =
+              formatNumber(data.completed_volume);
+            document.getElementById("remainingVolume").textContent =
+              formatNumber(data.remaining_volume);
+            document.getElementById("completionPercent").textContent =
+              data.completion_percent + "%";
+            document.getElementById("remainingPercent").textContent =
+              (100 - data.completion_percent).toFixed(2) + "%";
+
+            // อัปเดตกราฟโดนัท (ทำแล้ว vs คงเหลือ)
+            updateCompletionChart(data.completed_volume, data.remaining_volume);
+          }
+        } catch (error) {
+          console.error("Error loading summary:", error);
+        }
+      }
+
+      // โหลดความก้าวหน้าราย STA (ตาราง + กราฟแท่ง)
+      async function loadSTAProgress() {
+        try {
+          const response = await fetch("/api/sta-progress");
+          const result = await response.json();
+
+          if (result.success) {
+            const tbody = document.getElementById("staProgressTable");
+            tbody.innerHTML = "";
+
+            result.data.forEach((sta) => {
+              const color = getProgressColor(sta.progress_percent);
+              tbody.innerHTML += `
+                            <tr>
+                                <td><strong>${sta.sta_name}</strong></td>
+                                <td>
+                                    <div class="progress-bar-custom">
+                                        <div class="progress-bar-fill" style="width: ${sta.progress_percent}%; background-color: ${color}">
+                                            ${sta.progress_percent.toFixed(1)}%
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">${formatNumber(sta.completed_volume)} / ${formatNumber(sta.design_volume)} m³</small>
+                                </td>
+                                <td>${getStatusBadge(sta.status)}</td>
+                            </tr>
+                        `;
+            });
+
+            // อัปเดตกราฟแท่งปริมาตรแยกตาม STA
+            updateVolumeChart(result.data);
+          }
+        } catch (error) {
+          console.error("Error loading STA progress:", error);
+        }
+      }
+
+      // โหลดความก้าวหน้าราย Layer (ตาราง)
+      async function loadLayerProgress() {
+        try {
+          const response = await fetch("/api/layer-progress");
+          const result = await response.json();
+
+          if (result.success) {
+            const tbody = document.getElementById("layerProgressTable");
+            tbody.innerHTML = "";
+
+            result.data.forEach((layer) => {
+              const color = getProgressColor(layer.progress_percent);
+              tbody.innerHTML += `
+                            <tr>
+                                <td>${layer.sta_name}</td>
+                      <td><strong>${layer.layer_name}</strong><br><small class="text-muted">${t("layer_prefix")} ${layer.layer_number}</small></td>
+                                <td>
+                                    <div class="progress-bar-custom">
+                                        <div class="progress-bar-fill" style="width: ${layer.progress_percent}%; background-color: ${color}">
+                                            ${layer.progress_percent.toFixed(1)}%
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>${getStatusBadge(layer.status)}</td>
+                            </tr>
+                        `;
+            });
+          }
+        } catch (error) {
+          console.error("Error loading layer progress:", error);
+        }
+      }
+
+      // โหลดข้อมูล QAQC (สรุป + ตารางรายการทดสอบ)
+      async function loadQAQCTests() {
+        try {
+          const response = await fetch("/api/qaqc-tests");
+          const result = await response.json();
+
+          if (result.success) {
+            const data = result.data;
+
+            // อัปเดตการ์ดสรุป QAQC
+            document.getElementById("totalTests").textContent =
+              data.total_tests;
+            document.getElementById("passedTests").textContent = data.passed;
+            document.getElementById("failedTests").textContent = data.failed;
+            document.getElementById("passRate").textContent =
+              data.pass_rate + "%";
+
+            // อัปเดตตารางรายการทดสอบ
+            const tbody = document.getElementById("qaqcTestsTable");
+            tbody.innerHTML = "";
+
+            data.tests.forEach((test) => {
+              tbody.innerHTML += `
+                            <tr>
+                                <td>${test.sta_name}</td>
+                                <td>${test.layer_name}</td>
+                                <td>${test.test_date}</td>
+                                <td>${test.test_type}</td>
+                                <td>${test.test_location}</td>
+                                <td>${test.compaction_percent ? test.compaction_percent.toFixed(2) + "%" : "-"}</td>
+                                <td>${getResultBadge(test.result)}</td>
+                            </tr>
+                        `;
+            });
+          }
+        } catch (error) {
+          console.error("Error loading QAQC tests:", error);
+        }
+      }
+
+      // โหลดความก้าวหน้ารายวัน (ตาราง + กราฟเส้น)
+      async function loadDailyProgress() {
+        try {
+          const response = await fetch("/api/daily-progress");
+          const result = await response.json();
+
+          if (!result.success) return;
+
+          const rows = Array.isArray(result.data) ? result.data : [];
+          rows.sort((a, b) =>
+            String(a.date || "").localeCompare(String(b.date || "")),
+          );
+
+          const tbody = document.getElementById("dailyProgressTable");
+          if (!tbody) return;
+
+          tbody.innerHTML = "";
+          rows.forEach((r) => {
+            tbody.innerHTML += `
+              <tr>
+                <td>${r.date || ""}</td>
+                <td>${formatNumber(Number(r.daily_volume || 0))} m³</td>
+                <td>${formatNumber(Number(r.cumulative_volume || 0))} m³</td>
+                <td>${r.weather || ""}</td>
+                <td>${Number(r.manpower || 0)}</td>
+                <td>${Number(r.equipment || 0)}</td>
+                <td>${r.remarks || ""}</td>
+              </tr>
+            `;
+          });
+
+          updateDailyChart(rows);
+        } catch (error) {
+          console.error("Error loading daily progress:", error);
+        }
+      }
+
+      // ปุ่มเลื่อนขึ้น/ลง เฉพาะส่วน Daily Progress (ไม่กระทบการเลื่อนทั้งหน้า)
+      function scrollDailyProgress(direction) {
+        const container = document.getElementById("dailyProgressScroll");
+        if (!container) return;
+
+        const amount = Math.max(120, Math.floor(container.clientHeight * 0.8));
+        container.scrollBy({
+          top: direction * amount,
+          behavior: "smooth",
+        });
+      }
+
+      // วาด/อัปเดตกราฟเส้นรายวัน (Daily + Cumulative)
+      function updateDailyChart(rows) {
+        const canvas = document.getElementById("dailyChart");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+
+        if (dailyChart) {
+          dailyChart.destroy();
+        }
+
+        const labels = rows.map((r) => r.date);
+        const daily = rows.map((r) => Number(r.daily_volume || 0));
+        const cumulative = rows.map((r) => Number(r.cumulative_volume || 0));
+
+        dailyChart = new Chart(ctx, {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: t("daily_volume_dataset"),
+                data: daily,
+                borderColor: "rgba(52, 152, 219, 1)",
+                backgroundColor: "rgba(52, 152, 219, 0.15)",
+                tension: 0.25,
+              },
+              {
+                label: t("cumulative_volume_dataset"),
+                data: cumulative,
+                borderColor: "rgba(39, 174, 96, 1)",
+                backgroundColor: "rgba(39, 174, 96, 0.10)",
+                tension: 0.25,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: "top" },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.dataset.label +
+                      ": " +
+                      formatNumber(context.raw) +
+                      " m³"
+                    );
+                  },
+                },
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return formatNumber(value) + " m³";
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // วาด/อัปเดตกราฟแท่งปริมาตร (Design vs Completed)
+      function updateVolumeChart(data) {
+        const ctx = document.getElementById("volumeChart").getContext("2d");
+
+        if (volumeChart) {
+          volumeChart.destroy();
+        }
+
+        volumeChart = new Chart(ctx, {
+          type: "bar",
+          data: {
+            labels: data.map((d) => d.sta_name),
+            datasets: [
+              {
+                label: t("design_volume_dataset"),
+                data: data.map((d) => d.design_volume),
+                backgroundColor: "rgba(52, 152, 219, 0.7)",
+                borderColor: "rgba(52, 152, 219, 1)",
+                borderWidth: 1,
+              },
+              {
+                label: t("completed_volume_dataset"),
+                data: data.map((d) => d.completed_volume),
+                backgroundColor: "rgba(39, 174, 96, 0.7)",
+                borderColor: "rgba(39, 174, 96, 1)",
+                borderWidth: 1,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "top",
+              },
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  callback: function (value) {
+                    return formatNumber(value) + " m³";
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // วาด/อัปเดตกราฟโดนัท (Completed vs Remaining)
+      function updateCompletionChart(completed, remaining) {
+        const ctx = document.getElementById("completionChart").getContext("2d");
+
+        if (completionChart) {
+          completionChart.destroy();
+        }
+
+        completionChart = new Chart(ctx, {
+          type: "doughnut",
+          data: {
+            labels: [t("completed_label"), t("remaining_label")],
+            datasets: [
+              {
+                data: [completed, remaining],
+                backgroundColor: [
+                  "rgba(39, 174, 96, 0.8)",
+                  "rgba(243, 156, 18, 0.8)",
+                ],
+                borderColor: ["rgba(39, 174, 96, 1)", "rgba(243, 156, 18, 1)"],
+                borderWidth: 2,
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: "bottom",
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return (
+                      context.label + ": " + formatNumber(context.raw) + " m³"
+                    );
+                  },
+                },
+              },
+            },
+          },
+        });
+      }
+
+      // กดปุ่ม Refresh: สั่ง backend ล้างแคช แล้วค่อยโหลดข้อมูลทุกส่วนใหม่
+      async function refreshData() {
+        try {
+          const response = await fetch("/api/refresh-data", { method: "POST" });
+          const result = await response.json();
+
+          if (result.success) {
+            lastUpdateValue = result.timestamp;
+            renderLastUpdate();
+
+            // โหลดข้อมูลทุกส่วนใหม่ (ตาราง/กราฟ)
+            loadAllData();
+          }
+        } catch (error) {
+          console.error("Error refreshing data:", error);
+        }
+      }
+
+      // โหลดข้อมูลทุกส่วนของหน้าแดชบอร์ด
+      function loadAllData() {
+        loadSummary();
+        loadSTAProgress();
+        loadLayerProgress();
+        loadQAQCTests();
+        loadDailyProgress();
+      }
+
+      // เริ่มทำงานเมื่อ DOM พร้อม
+      document.addEventListener("DOMContentLoaded", function () {
+        const saved = localStorage.getItem("earthwork_dashboard_lang");
+        const browserIsThai = (navigator.language || "")
+          .toLowerCase()
+          .startsWith("th");
+        const defaultLang = saved ? saved : browserIsThai ? "th" : "en";
+        setLanguage(defaultLang, false);
+
+        const toggleBtn = document.getElementById("langToggle");
+        if (toggleBtn) {
+          toggleBtn.addEventListener("click", () => {
+            setLanguage(currentLang === "th" ? "en" : "th");
+            // โหลดข้อมูลใหม่เพื่อให้ข้อความไดนามิก (สถานะ/ผลทดสอบ/legend กราฟ) เปลี่ยนตามภาษา
+            loadAllData();
+          });
+        }
+
+        const dailyUp = document.getElementById("dailyScrollUp");
+        if (dailyUp) {
+          dailyUp.addEventListener("click", () => scrollDailyProgress(-1));
+        }
+        const dailyDown = document.getElementById("dailyScrollDown");
+        if (dailyDown) {
+          dailyDown.addEventListener("click", () => scrollDailyProgress(1));
+        }
+
+        loadAllData();
+        lastUpdateValue = null;
+        renderLastUpdate();
+      });
+
+      // รีเฟรชข้อมูลอัตโนมัติทุก 5 นาที
+      setInterval(loadAllData, 300000);
+    </script>
+  </body>
+</html>
