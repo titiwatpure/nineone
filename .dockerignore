@@ -10,3 +10,7 @@ venv/
 .git/
 .gitignore
 .vscode/
+
+# App runtime data (avoid baking local DB into image)
+data/*.sqlite3
+data/fuel.sqlite3

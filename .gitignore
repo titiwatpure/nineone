@@ -21,3 +21,6 @@ Thumbs.db
 # Editors
 .vscode/
 .idea/
+
+# App data (keep out of git)
+data/fuel.sqlite3

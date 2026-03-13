@@ -1,0 +1,57 @@
+name: Deploy to Oracle VM (Docker)
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-oracle-vm
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script_stop: true
+          script: |
+            set -e
+
+            # Folder where the repo is cloned on the server
+            APP_DIR="${DEPLOY_APP_DIR:-/opt/earthwork_dashboard}"
+
+            # Persistent data folder on the server (Excel + SQLite)
+            DATA_DIR="${DEPLOY_DATA_DIR:-/opt/earthwork-data}"
+
+            if [ ! -d "$APP_DIR" ]; then
+              echo "APP_DIR not found: $APP_DIR"
+              echo "Clone this repo on the server first, e.g.:"
+              echo "  sudo mkdir -p $APP_DIR && sudo chown $USER:$USER $APP_DIR"
+              echo "  git clone <your-repo-ssh-url> $APP_DIR"
+              exit 1
+            fi
+
+            mkdir -p "$DATA_DIR"
+
+            cd "$APP_DIR"
+            git fetch --all --prune
+            git reset --hard origin/main
+
+            docker build -t earthwork-dashboard .
+
+            docker rm -f earthwork 2>/dev/null || true
+
+            docker run -d \
+              --name earthwork \
+              --restart unless-stopped \
+              -p 8080:8080 \
+              -v "$DATA_DIR:/app/data" \
+              earthwork-dashboard
+
+            echo "Deployed: http://<server-ip>:8080"

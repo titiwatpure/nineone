@@ -1,0 +1,773 @@
+<!doctype html>
+<html lang="th">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>น้ำมันเชื้อเพลิง</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary-color: #2c3e50;
+        --secondary-color: #3498db;
+        --success-color: #27ae60;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --info-color: #17a2b8;
+      }
+
+      body {
+        background-color: #f4f6f9;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+
+      .navbar {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--secondary-color)
+        );
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .dashboard-card {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+
+      .section-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--primary-color);
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e9ecef;
+      }
+
+      .stat-card {
+        padding: 18px;
+        position: relative;
+      }
+
+      .stat-card .icon {
+        position: absolute;
+        right: 16px;
+        top: 16px;
+        font-size: 2.4rem;
+        opacity: 0.15;
+      }
+
+      .stat-card .value {
+        font-size: 1.7rem;
+        font-weight: 700;
+      }
+
+      .stat-card .label {
+        font-size: 0.85rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+      }
+
+      .table-custom th {
+        background-color: var(--primary-color);
+        color: white;
+        font-weight: 500;
+        border: none;
+      }
+
+      .table-custom td {
+        vertical-align: middle;
+      }
+
+      .hint {
+        font-size: 0.9rem;
+        color: #6c757d;
+      }
+
+      @media (max-width: 768px) {
+        .stat-card {
+          padding: 12px;
+        }
+        .stat-card .icon {
+          font-size: 1.8rem;
+          right: 12px;
+          top: 12px;
+        }
+        .stat-card .value {
+          font-size: 1.3rem;
+        }
+        .stat-card .label {
+          font-size: 0.75rem;
+        }
+        .section-title {
+          font-size: 1rem;
+        }
+        .navbar-brand {
+          font-size: 0.9rem;
+        }
+        .table-responsive {
+          font-size: 0.85rem;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .container-fluid {
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+        .stat-card .value {
+          font-size: 1.1rem;
+        }
+        .stat-card .icon {
+          font-size: 1.5rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg navbar-dark py-2 py-lg-3">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">
+          <i class="fas fa-gauge-high me-2"></i>
+          แดชบอร์ดงานดิน
+        </a>
+        <div class="d-flex align-items-center">
+          <span class="text-white me-3 d-none d-sm-inline">
+            <i class="fas fa-gas-pump me-1"></i>
+            น้ำมันเชื้อเพลิง
+          </span>
+        </div>
+      </div>
+    </nav>
+
+    <div class="container-fluid py-3 py-lg-4">
+      <div class="row g-3 mb-4">
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="dashboard-card stat-card">
+            <i class="fas fa-calendar-day icon text-primary"></i>
+            <div class="value text-primary" id="todayLiters">--</div>
+            <div class="label">วันนี้ (ลิตร)</div>
+            <div class="text-muted mt-1" id="todayAmount">-- บาท</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="dashboard-card stat-card">
+            <i class="fas fa-calendar-alt icon text-success"></i>
+            <div class="value text-success" id="monthLiters">--</div>
+            <div class="label">เดือนนี้ (ลิตร)</div>
+            <div class="text-muted mt-1" id="monthAmount">-- บาท</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="dashboard-card stat-card">
+            <i class="fas fa-calendar icon text-warning"></i>
+            <div class="value text-warning" id="yearLiters">--</div>
+            <div class="label">ปีนี้ (ลิตร)</div>
+            <div class="text-muted mt-1" id="yearAmount">-- บาท</div>
+          </div>
+        </div>
+        <div class="col-12 col-sm-6 col-lg-3">
+          <div class="dashboard-card stat-card">
+            <i class="fas fa-trophy icon text-info"></i>
+            <div class="value text-info" id="topMachine">--</div>
+            <div class="label">เครื่องที่ใช้มากสุด (ช่วงที่เลือก)</div>
+            <div class="text-muted mt-1" id="topMachineLiters">-- ลิตร</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dashboard-card p-3">
+        <ul class="nav nav-tabs" id="fuelTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link active"
+              id="tab-entry"
+              data-bs-toggle="tab"
+              data-bs-target="#pane-entry"
+              type="button"
+              role="tab"
+            >
+              <i class="fas fa-pen me-1"></i>บันทึกเติมน้ำมัน
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="tab-import"
+              data-bs-toggle="tab"
+              data-bs-target="#pane-import"
+              type="button"
+              role="tab"
+            >
+              <i class="fas fa-file-import me-1"></i>นำเข้า Excel
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button
+              class="nav-link"
+              id="tab-report"
+              data-bs-toggle="tab"
+              data-bs-target="#pane-report"
+              type="button"
+              role="tab"
+            >
+              <i class="fas fa-chart-simple me-1"></i>รายงาน/ส่งออก
+            </button>
+          </li>
+        </ul>
+
+        <div class="tab-content p-3">
+          <!-- Tab 1: Manual Entry -->
+          <div
+            class="tab-pane fade show active"
+            id="pane-entry"
+            role="tabpanel"
+            aria-labelledby="tab-entry"
+          >
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="section-title">บันทึกรายการเติมน้ำมัน</div>
+                <div class="hint">
+                  ใส่ข้อมูลขั้นต่ำ: วันที่, รหัสเครื่องจักร, ปริมาณ(ลิตร)
+                </div>
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">วันที่</label>
+                <input class="form-control" type="date" id="entryDate" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">รหัสเครื่องจักร</label>
+                <input
+                  class="form-control"
+                  id="machineCode"
+                  placeholder="เช่น EX-01"
+                />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">ปริมาณ(ลิตร)</label>
+                <input
+                  class="form-control"
+                  id="liters"
+                  type="number"
+                  step="0.01"
+                />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">ราคา/ลิตร(บาท)</label>
+                <input
+                  class="form-control"
+                  id="pricePerLiter"
+                  type="number"
+                  step="0.01"
+                />
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">ยอดเงิน(บาท)</label>
+                <input
+                  class="form-control"
+                  id="amount"
+                  type="number"
+                  step="0.01"
+                />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">เลขที่ใบเสร็จ</label>
+                <input class="form-control" id="receiptNo" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">ผู้ขับ</label>
+                <input class="form-control" id="driver" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">ผู้บันทึก</label>
+                <input class="form-control" id="recorder" />
+              </div>
+
+              <div class="col-md-3">
+                <label class="form-label">ปั๊ม/ผู้ขาย</label>
+                <input class="form-control" id="vendor" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">สถานที่เติม</label>
+                <input class="form-control" id="location" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">ชั่วโมงเครื่อง</label>
+                <input
+                  class="form-control"
+                  id="hourMeter"
+                  type="number"
+                  step="0.1"
+                />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">หมายเหตุ</label>
+                <input class="form-control" id="remark" />
+              </div>
+
+              <div class="col-12 d-flex align-items-center gap-2">
+                <button class="btn btn-primary" id="btnSave">
+                  <i class="fas fa-save me-1"></i>บันทึก
+                </button>
+                <div id="saveMsg" class="small"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2: Import Excel -->
+          <div
+            class="tab-pane fade"
+            id="pane-import"
+            role="tabpanel"
+            aria-labelledby="tab-import"
+          >
+            <div class="section-title">นำเข้าไฟล์ Excel</div>
+            <div class="hint mb-3">
+              รองรับหัวคอลัมน์ภาษาไทย เช่น วันที่, รหัสเครื่องจักร,
+              ปริมาณ(ลิตร), ราคา/ลิตร(บาท), ยอดเงิน(บาท)
+            </div>
+
+            <div class="row g-3 align-items-end">
+              <div class="col-md-6">
+                <label class="form-label">เลือกไฟล์ .xlsx</label>
+                <input
+                  class="form-control"
+                  type="file"
+                  id="importFile"
+                  accept=".xlsx"
+                />
+              </div>
+              <div class="col-md-6">
+                <button class="btn btn-success" id="btnImport">
+                  <i class="fas fa-upload me-1"></i>นำเข้า
+                </button>
+              </div>
+              <div class="col-12">
+                <pre class="bg-light p-3 rounded" id="importResult">
+รอการนำเข้า...</pre
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: Reports/Export -->
+          <div
+            class="tab-pane fade"
+            id="pane-report"
+            role="tabpanel"
+            aria-labelledby="tab-report"
+          >
+            <div class="section-title">รายงานและส่งออกข้อมูล</div>
+            <div class="row g-3 align-items-end mb-3">
+              <div class="col-md-3">
+                <label class="form-label">เริ่มวันที่</label>
+                <input class="form-control" type="date" id="reportStart" />
+              </div>
+              <div class="col-md-3">
+                <label class="form-label">ถึงวันที่</label>
+                <input class="form-control" type="date" id="reportEnd" />
+              </div>
+              <div class="col-md-6 d-flex gap-2 flex-wrap">
+                <button class="btn btn-outline-primary" id="btnLoadReport">
+                  <i class="fas fa-rotate me-1"></i>โหลดรายงาน
+                </button>
+
+                <a
+                  class="btn btn-outline-secondary"
+                  id="exportDetailsCsv"
+                  href="#"
+                >
+                  <i class="fas fa-file-csv me-1"></i>Export รายละเอียด (CSV)
+                </a>
+                <a
+                  class="btn btn-outline-secondary"
+                  id="exportDetailsXlsx"
+                  href="#"
+                >
+                  <i class="fas fa-file-excel me-1"></i>Export รายละเอียด (XLSX)
+                </a>
+
+                <a
+                  class="btn btn-outline-secondary"
+                  id="exportSummaryXlsx"
+                  href="#"
+                >
+                  <i class="fas fa-file-excel me-1"></i>Export สรุป (XLSX)
+                </a>
+              </div>
+            </div>
+
+            <div class="row g-4">
+              <div class="col-lg-6">
+                <div class="table-responsive">
+                  <table class="table table-custom table-hover">
+                    <thead>
+                      <tr>
+                        <th>วัน</th>
+                        <th class="text-end">ลิตร</th>
+                        <th class="text-end">บาท</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tblDaily">
+                      <tr>
+                        <td colspan="3" class="text-center">กำลังโหลด...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="col-lg-6">
+                <div class="table-responsive">
+                  <table class="table table-custom table-hover">
+                    <thead>
+                      <tr>
+                        <th>เครื่องจักร</th>
+                        <th class="text-end">ลิตร</th>
+                        <th class="text-end">บาท</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tblMachine">
+                      <tr>
+                        <td colspan="3" class="text-center">กำลังโหลด...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="col-lg-6">
+                <div class="table-responsive">
+                  <table class="table table-custom table-hover">
+                    <thead>
+                      <tr>
+                        <th>เดือน</th>
+                        <th class="text-end">ลิตร</th>
+                        <th class="text-end">บาท</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tblMonthly">
+                      <tr>
+                        <td colspan="3" class="text-center">กำลังโหลด...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="col-lg-6">
+                <div class="table-responsive">
+                  <table class="table table-custom table-hover">
+                    <thead>
+                      <tr>
+                        <th>ปี</th>
+                        <th class="text-end">ลิตร</th>
+                        <th class="text-end">บาท</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tblYearly">
+                      <tr>
+                        <td colspan="3" class="text-center">กำลังโหลด...</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      function fmtNumber(n, digits = 2) {
+        const num = Number(n || 0);
+        return num.toLocaleString("th-TH", {
+          minimumFractionDigits: 0,
+          maximumFractionDigits: digits,
+        });
+      }
+
+      function todayIso() {
+        const d = new Date();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        const dd = String(d.getDate()).padStart(2, "0");
+        return `${d.getFullYear()}-${mm}-${dd}`;
+      }
+
+      function firstDayOfMonthIso() {
+        const d = new Date();
+        const mm = String(d.getMonth() + 1).padStart(2, "0");
+        return `${d.getFullYear()}-${mm}-01`;
+      }
+
+      function firstDayOfYearIso() {
+        const d = new Date();
+        return `${d.getFullYear()}-01-01`;
+      }
+
+      function setText(id, text) {
+        const el = document.getElementById(id);
+        if (el) el.textContent = text;
+      }
+
+      async function loadHeaderSummary(start, end) {
+        const url = new URL("/api/fuel/summary", window.location.origin);
+        url.searchParams.set("start", start);
+        url.searchParams.set("end", end);
+        const res = await fetch(url);
+        const json = await res.json();
+        if (!json.success) return;
+
+        const d = json.data;
+        setText("todayLiters", fmtNumber(d.today.liters, 2));
+        setText("todayAmount", `${fmtNumber(d.today.amount, 2)} บาท`);
+        setText("monthLiters", fmtNumber(d.month.liters, 2));
+        setText("monthAmount", `${fmtNumber(d.month.amount, 2)} บาท`);
+        setText("yearLiters", fmtNumber(d.year.liters, 2));
+        setText("yearAmount", `${fmtNumber(d.year.amount, 2)} บาท`);
+
+        if (d.top_machine) {
+          setText("topMachine", d.top_machine.machine_code);
+          setText(
+            "topMachineLiters",
+            `${fmtNumber(d.top_machine.liters, 2)} ลิตร`,
+          );
+        } else {
+          setText("topMachine", "-");
+          setText("topMachineLiters", "- ลิตร");
+        }
+      }
+
+      async function saveEntry() {
+        const payload = {
+          entry_date: document.getElementById("entryDate").value,
+          machine_code: document.getElementById("machineCode").value,
+          liters: document.getElementById("liters").value,
+          price_per_liter: document.getElementById("pricePerLiter").value,
+          amount: document.getElementById("amount").value,
+          receipt_no: document.getElementById("receiptNo").value,
+          driver: document.getElementById("driver").value,
+          recorder: document.getElementById("recorder").value,
+          vendor: document.getElementById("vendor").value,
+          location: document.getElementById("location").value,
+          hour_meter: document.getElementById("hourMeter").value,
+          remark: document.getElementById("remark").value,
+        };
+
+        const msg = document.getElementById("saveMsg");
+        msg.textContent = "กำลังบันทึก...";
+
+        const res = await fetch("/api/fuel/entry", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const json = await res.json();
+        msg.textContent = json.success
+          ? "บันทึกแล้ว"
+          : `ไม่สำเร็จ: ${json.error || ""}`;
+
+        await loadHeaderSummary(
+          document.getElementById("reportStart").value,
+          document.getElementById("reportEnd").value,
+        );
+      }
+
+      async function importExcel() {
+        const fileInput = document.getElementById("importFile");
+        const out = document.getElementById("importResult");
+        if (!fileInput.files || !fileInput.files[0]) {
+          out.textContent = "กรุณาเลือกไฟล์ก่อน";
+          return;
+        }
+
+        out.textContent = "กำลังนำเข้า...";
+        const form = new FormData();
+        form.append("file", fileInput.files[0]);
+
+        const res = await fetch("/api/fuel/import-excel", {
+          method: "POST",
+          body: form,
+        });
+        const json = await res.json();
+        out.textContent = JSON.stringify(json, null, 2);
+
+        await loadHeaderSummary(
+          document.getElementById("reportStart").value,
+          document.getElementById("reportEnd").value,
+        );
+      }
+
+      function renderRows(tbodyId, rows, columns) {
+        const tbody = document.getElementById(tbodyId);
+        tbody.innerHTML = "";
+        if (!rows || rows.length === 0) {
+          tbody.innerHTML = `<tr><td colspan="${columns.length}" class="text-center">ไม่มีข้อมูล</td></tr>`;
+          return;
+        }
+        for (const r of rows) {
+          const tds = columns
+            .map((c) => {
+              const val = r[c.key];
+              const text = c.format ? c.format(val) : (val ?? "");
+              const cls = c.className ? ` class="${c.className}"` : "";
+              return `<td${cls}>${text}</td>`;
+            })
+            .join("");
+          tbody.innerHTML += `<tr>${tds}</tr>`;
+        }
+      }
+
+      function updateExportLinks() {
+        const start = document.getElementById("reportStart").value;
+        const end = document.getElementById("reportEnd").value;
+        const base = new URL("/api/fuel/export", window.location.origin);
+        base.searchParams.set("start", start);
+        base.searchParams.set("end", end);
+
+        const detailsCsv = new URL(base);
+        detailsCsv.searchParams.set("kind", "details");
+        detailsCsv.searchParams.set("format", "csv");
+        document.getElementById("exportDetailsCsv").href =
+          detailsCsv.toString();
+
+        const detailsXlsx = new URL(base);
+        detailsXlsx.searchParams.set("kind", "details");
+        detailsXlsx.searchParams.set("format", "xlsx");
+        document.getElementById("exportDetailsXlsx").href =
+          detailsXlsx.toString();
+
+        const summaryXlsx = new URL(base);
+        summaryXlsx.searchParams.set("kind", "summary");
+        summaryXlsx.searchParams.set("format", "xlsx");
+        document.getElementById("exportSummaryXlsx").href =
+          summaryXlsx.toString();
+      }
+
+      async function loadReport() {
+        const start = document.getElementById("reportStart").value;
+        const end = document.getElementById("reportEnd").value;
+        updateExportLinks();
+
+        const url = new URL("/api/fuel/report", window.location.origin);
+        url.searchParams.set("start", start);
+        url.searchParams.set("end", end);
+        const res = await fetch(url);
+        const json = await res.json();
+        if (!json.success) return;
+
+        const d = json.data;
+        renderRows("tblDaily", d.daily, [
+          { key: "date" },
+          {
+            key: "liters",
+            className: "text-end",
+            format: (v) => fmtNumber(v, 2),
+          },
+          {
+            key: "amount",
+            className: "text-end",
+            format: (v) => fmtNumber(v, 2),
+          },
+        ]);
+        renderRows("tblMonthly", d.monthly, [
+          { key: "month" },
+          {
+            key: "liters",
+            className: "text-end",
+            format: (v) => fmtNumber(v, 2),
+          },
+          {
+            key: "amount",
+            className: "text-end",
+            format: (v) => fmtNumber(v, 2),
+          },
+        ]);
+        renderRows("tblYearly", d.yearly, [
+          { key: "year" },
+          {
+            key: "liters",
+            className: "text-end",
+            format: (v) => fmtNumber(v, 2),
+          },
+          {
+            key: "amount",
+            className: "text-end",
+            format: (v) => fmtNumber(v, 2),
+          },
+        ]);
+        renderRows("tblMachine", d.by_machine, [
+          { key: "machine_code" },
+          {
+            key: "liters",
+            className: "text-end",
+            format: (v) => fmtNumber(v, 2),
+          },
+          {
+            key: "amount",
+            className: "text-end",
+            format: (v) => fmtNumber(v, 2),
+          },
+        ]);
+
+        await loadHeaderSummary(start, end);
+      }
+
+      function bindAutoAmount() {
+        const litersEl = document.getElementById("liters");
+        const priceEl = document.getElementById("pricePerLiter");
+        const amountEl = document.getElementById("amount");
+
+        function recalc() {
+          const liters = Number(litersEl.value || 0);
+          const price = Number(priceEl.value || 0);
+          const amount = Number(amountEl.value || 0);
+
+          // ถ้าผู้ใช้กรอกยอดเงินเองแล้ว ไม่ไปทับ
+          if (amountEl.dataset.manual === "1") return;
+          if (liters > 0 && price > 0) {
+            amountEl.value = (liters * price).toFixed(2);
+          }
+        }
+
+        amountEl.addEventListener("input", () => {
+          amountEl.dataset.manual = amountEl.value ? "1" : "0";
+        });
+        litersEl.addEventListener("input", recalc);
+        priceEl.addEventListener("input", recalc);
+      }
+
+      document.addEventListener("DOMContentLoaded", async () => {
+        document.getElementById("entryDate").value = todayIso();
+        document.getElementById("reportStart").value = firstDayOfMonthIso();
+        document.getElementById("reportEnd").value = todayIso();
+
+        bindAutoAmount();
+        updateExportLinks();
+
+        document.getElementById("btnSave").addEventListener("click", saveEntry);
+        document
+          .getElementById("btnImport")
+          .addEventListener("click", importExcel);
+        document
+          .getElementById("btnLoadReport")
+          .addEventListener("click", loadReport);
+
+        await loadReport();
+      });
+    </script>
+  </body>
+</html>

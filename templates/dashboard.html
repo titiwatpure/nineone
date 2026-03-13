@@ -219,50 +219,135 @@
       }
 
       @media (max-width: 768px) {
+        .stat-card {
+          padding: 15px;
+        }
         .stat-card .value {
-          font-size: 1.8rem;
+          font-size: 1.5rem;
         }
         .stat-card .icon {
-          font-size: 2rem;
+          font-size: 1.8rem;
+          right: 15px;
+          top: 15px;
+        }
+        .stat-card .label {
+          font-size: 0.8rem;
+        }
+        .progress-section {
+          padding: 15px;
+        }
+        .section-title {
+          font-size: 1.1rem;
+          margin-bottom: 15px;
+        }
+        .qaqc-number {
+          font-size: 1.5rem;
+        }
+        .navbar-brand {
+          font-size: 1rem;
+        }
+        .last-update {
+          font-size: 0.75rem;
+        }
+        .refresh-btn {
+          padding: 8px 15px;
+          font-size: 0.9rem;
+        }
+        .table-responsive {
+          font-size: 0.85rem;
+        }
+        .status-badge {
+          padding: 3px 8px;
+          font-size: 0.75rem;
+        }
+        .chart-container {
+          height: 250px;
+        }
+      }
+
+      @media (max-width: 576px) {
+        .container-fluid {
+          padding-left: 10px;
+          padding-right: 10px;
+        }
+        .stat-card .value {
+          font-size: 1.3rem;
+        }
+        .stat-card .icon {
+          font-size: 1.5rem;
+        }
+        .navbar .btn {
+          font-size: 0.8rem;
+          padding: 0.25rem 0.5rem;
+        }
+        .qaqc-summary-card {
+          padding: 15px;
+        }
+        .qaqc-number {
+          font-size: 1.3rem;
         }
       }
     </style>
   </head>
   <body>
     <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark py-3">
+    <nav class="navbar navbar-expand-lg navbar-dark py-2 py-lg-3">
       <div class="container-fluid">
         <a class="navbar-brand" href="#">
           <i class="fas fa-hard-hat me-2"></i>
           <span data-i18n="brand">แดชบอร์ดงานดิน</span>
         </a>
-        <div class="d-flex align-items-center">
-          <span class="last-update text-white me-3" id="lastUpdate">
-            <i class="fas fa-clock me-1"></i>
-            <span data-i18n="last_update">อัปเดตล่าสุด</span>:
-            <span id="lastUpdateTime">--</span>
-          </span>
-          <button
-            class="btn btn-outline-light btn-sm me-2"
-            id="langToggle"
-            type="button"
-            aria-label="Toggle language"
-          >
-            EN
-          </button>
-          <button class="refresh-btn" onclick="refreshData()">
-            <i class="fas fa-sync-alt me-2"></i
-            ><span data-i18n="refresh">รีเฟรช</span>
-          </button>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <div class="d-flex align-items-center ms-auto">
+            <span
+              class="last-update text-white me-3 d-none d-sm-inline"
+              id="lastUpdate"
+            >
+              <i class="fas fa-clock me-1"></i>
+              <span data-i18n="last_update">อัปเดตล่าสุด</span>:
+              <span id="lastUpdateTime">--</span>
+            </span>
+            <a
+              class="btn btn-outline-light btn-sm me-2"
+              href="/fuel"
+              aria-label="Fuel"
+            >
+              <i class="fas fa-gas-pump me-1"></i>
+              น้ำมันเชื้อเพลิง
+            </a>
+            <button
+              class="btn btn-outline-light btn-sm me-2"
+              id="langToggle"
+              type="button"
+              aria-label="Toggle language"
+            >
+              EN
+            </button>
+            <button class="refresh-btn" onclick="refreshData()">
+              <i class="fas fa-sync-alt me-2"></i
+              ><span data-i18n="refresh">รีเฟรช</span>
+            </button>
+          </div>
         </div>
       </div>
     </nav>
 
-    <div class="container-fluid py-4">
+    <div class="container-fluid py-3 py-lg-4">
       <!-- Volume Summary Cards -->
-      <div class="row g-4 mb-4">
+      <div class="row g-3 mb-4">
         <!-- Total Volume -->
-        <div class="col-lg-4 col-md-6">
+        <div class="col-12 col-sm-6 col-lg-4">
           <div class="dashboard-card stat-card total">
             <i class="fas fa-cube icon text-primary"></i>
             <div class="value text-primary" id="totalVolume">--</div>
@@ -274,7 +359,7 @@
         </div>
 
         <!-- Completed Volume -->
-        <div class="col-lg-4 col-md-6">
+        <div class="col-12 col-sm-6 col-lg-4">
           <div class="dashboard-card stat-card completed">
             <i class="fas fa-check-circle icon text-success"></i>
             <div class="value text-success" id="completedVolume">--</div>
@@ -289,7 +374,7 @@
         </div>
 
         <!-- Remaining Volume -->
-        <div class="col-lg-4 col-md-6">
+        <div class="col-12 col-sm-6 col-lg-4">
           <div class="dashboard-card stat-card remaining">
             <i class="fas fa-hourglass-half icon text-warning"></i>
             <div class="value text-warning" id="remainingVolume">--</div>
@@ -303,16 +388,16 @@
       </div>
 
       <!-- STA Progress & Layer Progress -->
-      <div class="row g-4 mb-4">
+      <div class="row g-3 mb-4">
         <!-- STA Progress -->
-        <div class="col-lg-6">
+        <div class="col-12 col-lg-6">
           <div class="dashboard-card progress-section">
             <h5 class="section-title">
               <i class="fas fa-road me-2"></i
               ><span data-i18n="sta_progress">ความก้าวหน้า STA</span>
             </h5>
             <div class="table-responsive">
-              <table class="table table-custom table-hover">
+              <table class="table table-custom table-hover table-sm">
                 <thead>
                   <tr>
                     <th data-i18n="station">สถานี</th>
@@ -333,14 +418,14 @@
         </div>
 
         <!-- Layer Progress -->
-        <div class="col-lg-6">
+        <div class="col-12 col-lg-6">
           <div class="dashboard-card progress-section">
             <h5 class="section-title">
               <i class="fas fa-layer-group me-2"></i
               ><span data-i18n="layer_progress">ความก้าวหน้าแต่ละชั้นงาน</span>
             </h5>
             <div class="table-responsive">
-              <table class="table table-custom table-hover">
+              <table class="table table-custom table-hover table-sm">
                 <thead>
                   <tr>
                     <th data-i18n="station">สถานี</th>
@@ -363,7 +448,7 @@
       </div>
 
       <!-- QAQC Tests -->
-      <div class="row g-4 mb-4">
+      <div class="row g-3 mb-4">
         <div class="col-12">
           <div class="dashboard-card progress-section">
             <h5 class="section-title">
@@ -372,24 +457,24 @@
             </h5>
 
             <!-- QAQC Summary Cards -->
-            <div class="row g-3 mb-4">
-              <div class="col-md-3 col-6">
+            <div class="row g-2 mb-4">
+              <div class="col-6 col-sm-3">
                 <div class="qaqc-summary-card bg-light rounded">
                   <div class="qaqc-number text-primary" id="totalTests">--</div>
-                  <div class="text-muted" data-i18n="total_tests">
+                  <div class="text-muted small" data-i18n="total_tests">
                     จำนวนทดสอบทั้งหมด
                   </div>
                 </div>
               </div>
-              <div class="col-md-3 col-6">
+              <div class="col-6 col-sm-3">
                 <div class="qaqc-summary-card bg-light rounded">
                   <div class="qaqc-number text-success" id="passedTests">
                     --
                   </div>
-                  <div class="text-muted" data-i18n="passed">ผ่าน</div>
+                  <div class="text-muted small" data-i18n="passed">ผ่าน</div>
                 </div>
               </div>
-              <div class="col-md-3 col-6">
+              <div class="col-6 col-sm-3">
                 <div class="qaqc-summary-card bg-light rounded">
                   <div class="qaqc-number text-danger" id="failedTests">--</div>
                   <div class="text-muted" data-i18n="failed">ไม่ผ่าน</div>
